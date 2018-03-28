@@ -1,0 +1,13 @@
+.login_wrapper {
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-block {
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 520px;
+  width: 1000px;
+  border: 2px dashed black;
+}

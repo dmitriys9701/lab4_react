@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>LAB 3 : MAIN</title>
+    <h:outputStylesheet library="css" name="styles.css"/>
+    <h:outputScript library="primefaces" name="jquery/jquery.js" target="head" />
+</h:head>
+
+<h:body>
+    <h:outputScript target="head">$ = jQuery;</h:outputScript>
+    <div class="root">
+        <p class="title-txt">PIP LAB3 VAR. 8224</p>
+        <div class="container">
+            <h:form id="form" styleClass="form">
+                <div class="block">
+                    <p:outputLabel styleClass="label" for="x-spinner" value="x "/>
+                    <p:spinner id="x-spinner" min="-5" max="5" value="0" stepFactor="1"/><br/>
+                </div>
+
+                <div class="block">
+                    <p:outputLabel styleClass="label" value="y "/>
+                    <h:inputText id="y-fld" value="0" onchange="validate_y()"/><br/>
+                </div>
+                <script type="text/javascript">
+                    function validate_y() {
+                        const $y_fld = $('#form\\:y-fld');
+                        const fld_value = parseFloat($y_fld.val());
+
+                        if(isNaN(fld_value)) $y_fld.val(0.0);
+                        else if(fld_value > 5) $y_fld.val(5);
+                        else if(-3 > fld_value) $y_fld.val(-3);
+                    }
+                </script>
+
+                <div class="block">
+                    <p:outputLabel styleClass="label" for="radius-slider" value="radius: "/>
+                    <p:inputText id="radius-fld" value="4" minValue="2" maxValue="5"/>
+                </div>
+                <div class="block">
+                    <p:slider id="radius-slider" for="radius-fld" minValue="2" maxValue="5" step="1">
+                    </p:slider>
+                </div>
+                <h:commandButton id="check" value="поставить точку">
+                    <f:ajax listener="#{historyBean.check}" render="result_table" onevent="ajax_callback"/>
+                </h:commandButton>
+                <h:commandButton id="recheck" style="display: none;">
+                    <f:ajax listener="#{historyBean.recheck}" render="result_table" onevent="ajax_callback"/>
+                </h:commandButton>
+                <hr/>
+                <h:dataTable id="result_table" value="#{sessionBean.checkResults}" var="historyItem">
+                    <h:column>
+                        <f:facet name="header">X</f:facet>
+                        #{historyItem.x}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Y</f:facet>
+                        #{historyItem.y}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">INSIDE</f:facet>
+                        #{historyItem.insideArea ? "true" : "false"}
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+            <canvas id="canvas" class="canvas" width="500" height="500"></canvas>
+            <script type="text/javascript">
+                const ctx = $('#canvas').get(0).getContext('2d');
+                const unit = 250.0 / 6;
+
+                const $x_fld = $('#form\\:x-spinner_input');
+                const $y_fld = $('#form\\:y-fld');
+                const $radius_fld = $('#form\\:radius-fld');
+                const $slider = $('#form\\:radius-slider');
+                const $check_btn = $('#form\\:check');
+                const $recheck_btn = $('#form\\:recheck');
+                const $canvas = $('#canvas');
+
+                $(document).ready(function () {
+                    $slider.slider({
+                        step: 0.1
+                    });
+                    $slider.on('slidestop', function () {
+                        render_basis();
+                        render_points();
+
+                        $recheck_btn.click();
+                    });
+                    $canvas.on('click', function (e) {
+                        $x_fld.val(x_to_normal(e.pageX - $canvas.get(0).offsetLeft).toFixed(3));
+                        $y_fld.val(y_to_normal(e.pageY - $canvas.get(0).offsetTop).toFixed(3));
+
+                        $check_btn.click();
+                    });
+
+                    render_basis();
+                    $recheck_btn.click();
+
+                    const $spinner_fld = $('#form\\:x-spinner_input');
+                    const font_size = $spinner_fld.css('font-size');
+                    $y_fld.css('font-size', font_size);
+                    $y_fld.css('width', $spinner_fld.css('width'));
+                    $y_fld.css('height', $spinner_fld.css('height'));
+                    $check_btn.css('font-size', font_size);
+                });
+
+                function ajax_callback(data) {
+                    if(data.status === 'success') {
+                        render_basis();
+                        render_points();
+                    }
+                }
+
+                function x_to_canvas(normal) {
+                    return 250 + normal * unit;
+                }
+
+                function y_to_canvas(normal) {
+                    return 250 - normal * unit;
+                }
+
+                function x_to_normal(canvas) {
+                    return (canvas - 250) / unit;
+                }
+
+                function y_to_normal(canvas) {
+                    return (250 - canvas) / unit;
+                }
+
+                function render_basis() {
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, 500, 500);
+
+                    const radius = parseFloat($radius_fld.val());
+                    ctx.fillStyle = '#00f';
+
+                    ctx.beginPath();
+                    ctx.moveTo(250, 250);
+                    ctx.lineTo(x_to_canvas(-radius), 250);
+                    ctx.lineTo(250, y_to_canvas(radius));
+                    ctx.lineTo(250, 250);
+                    ctx.lineTo(x_to_canvas(radius), 250);
+                    ctx.lineTo(x_to_canvas(radius), y_to_canvas(-radius));
+                    ctx.lineTo(250, y_to_canvas(-radius));
+                    ctx.lineTo(250, 250);
+                    ctx.arc(250, 250, radius * unit / 2, 0.5 * Math.PI, Math.PI, false);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#000';
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 250);
+                    ctx.lineTo(500, 250);
+                    ctx.stroke();
+
+                    var i;
+                    for(i = -5; 5 >= i; i++) {
+                        const cur_x = x_to_canvas(i);
+
+                        ctx.beginPath();
+                        ctx.moveTo(cur_x, 245);
+                        ctx.lineTo(cur_x, 255);
+                        ctx.stroke();
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(250, 0);
+                    ctx.lineTo(250, 500);
+                    ctx.stroke();
+
+                    for(i = -5; 5 >= i; i++) {
+                        const cur_y = y_to_canvas(i);
+
+                        ctx.beginPath();
+                        ctx.moveTo(245, cur_y);
+                        ctx.lineTo(255, cur_y);
+                        ctx.stroke();
+                    }
+                }
+                
+                function render_points() {
+                    const table = $('#form\\:result_table').get(0);
+
+                    var row;
+                    for(var i = 1; row = table.rows[i]; i++) {
+                        const x = x_to_canvas(parseFloat(row.cells[0].innerHTML));
+                        const y = y_to_canvas(parseFloat(row.cells[1].innerHTML));
+
+                        if(isNaN(x)) return;
+                        if(row.cells[2].innerText === 'true') ctx.fillStyle = '#0f0';
+                        else ctx.fillStyle = '#f00';
+
+                        ctx.beginPath();
+                        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            </script>
+        </div>
+        <h:form>
+            <h:commandLink action="#{navigationBean.showPage}" value="Стартовая страница">
+                <f:param name="pageId" value="1"/>
+            </h:commandLink>
+        </h:form>
+    </div>
+</h:body>
+</html>
