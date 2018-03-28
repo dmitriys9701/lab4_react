@@ -128,8 +128,8 @@ class CanvasComponent extends React.Component {
     // const slider = $('#form\\:radius-slider');
     // const check_btn = $('#form\\:check');
     // const recheck_btn = $('#form\\:recheck');
-    
-    
+
+
     function x_to_canvas(normal) {
         return 250 + normal * unit;
     }
@@ -197,7 +197,7 @@ class CanvasComponent extends React.Component {
         }
     }
     render_basis()
-    
+
   }
   render() {
     return (
@@ -207,12 +207,42 @@ class CanvasComponent extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+  console.log('newstate', state.isLoggedIn)
   return {
     isLoggedIn: state.isLoggedIn
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
-}
+  
+  return {
+    LoginAttempt: ({username, password}) => {
+      /*return function (dispatch) {
+        let axiosConfig = {
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cookie": "JSESSIONID=5f996b4f9ef0c3368387e9f7cced; JSESSIONID=5f48eda106f2c43db1a51dee1338; treeForm_tree-hi=treeForm:tree:applications",
+            "Host": "localhost:46080",
+            "Referer": "http://localhost:46080/lab42964346056370179845/",
+            }
+        };
+        return axios.post('http://localhost:46080/lab42964346056370179845/rest/user/login', qs.stringify({"login": action.username, "password": action.password})
+          , axiosConfig).then(ans => dispatch({
+          type: 'loginAttempt',
+          result
+        }))
+        */
+        return async () => {
+          const response = await fetch('https://api.ipify.org?format=json').json()
+          console.log('response', response)
+          return dispatch({
+            type: 'loginAttempt',
+            response: Boolean(response)
+          })
+        }
+  }
+}}
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

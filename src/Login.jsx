@@ -96,6 +96,12 @@ class LoginPage extends Component {
   }
 }
 
+
+const asyncApiCall = async () => {
+    const response = await fetch('https://api.ipify.org?format=json')
+    return response
+}
+
 const mapStateToProps = (state) => {
   return {
     isLoggedIn: state.isLoggedIn
@@ -104,13 +110,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    LoginAttempt: ({username, password}) => {
-      dispatch({
-        type: 'loginAttempt',
-        username,
-        password
-      })
-    }
+    LoginAttempt: ({username = 'a', password = 'a'}) => {
+      fetch('https://api.ipify.org?format=json').then(data => dispatch({ type: 'loginAttempt', data: Boolean(data) }))
+      }
   }
 }
 
