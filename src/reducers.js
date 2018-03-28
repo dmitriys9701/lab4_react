@@ -17,7 +17,6 @@ const reducerLogin = ( isLoggedIn = false, action ) => {
     }
 }
 
-
 const rootReducer = combineReducers({
     isLoggedIn: reducerLogin
 })

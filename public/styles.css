@@ -11,3 +11,9 @@
   width: 1000px;
   border: 2px dashed black;
 }
+
+.dashed-border {
+  width: 501px;
+  height: 501px;
+  border: 2px dashed black;
+}
